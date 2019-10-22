@@ -6,6 +6,7 @@ import org.json.JSONObject;
 
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 
@@ -16,7 +17,8 @@ public class HTTPGet
 {
     public static void main(String[] args) {
         HTTPGet example = new HTTPGet("datakomm.work", 80);
-        example.doExampleGet();
+        //example.doExampleGet();
+        example.post2RandomNumber();
     }
 
     private String BASE_URL; // Base URL (address) of the server
@@ -98,6 +100,75 @@ public class HTTPGet
         {
             e.printStackTrace();
         }
+    }
+
+    private void post2RandomNumber()
+    {
+        try
+        {
+            int a = (int) Math.round(Math.random() * 100);
+            int b = (int) Math.round(Math.random() * 100);
+
+            JSONObject json = new JSONObject();
+            json.put("a", a);
+            json.put("b", b);
+
+            System.out.println("Posting this JSON data to server");
+            System.out.println(json.toString());
+            sendPost("dkrest/test/post", json);
+        } catch (JSONException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendPost(String path, JSONObject jsonData)
+    {
+        try
+        {
+            String url = BASE_URL + path;
+            URL urlObj = new URL(url);
+            System.out.println("Sending HTTP POST to " + url);
+            HttpURLConnection con = (HttpURLConnection) urlObj.openConnection();
+
+            con.setRequestMethod("POST");
+            con.setRequestProperty("Content-Type", "application/json");
+            con.setDoOutput(true);
+
+            OutputStream os = con.getOutputStream();
+            os.write(jsonData.toString().getBytes());
+            os.flush();
+
+            int responseCode = con.getResponseCode();
+            if (responseCode == 200)
+            {
+                System.out.println("Server reached");
+
+                //Response was OK, read the body (data)
+                InputStream stream = con.getInputStream();
+                String responseBody = convertStreamToString(stream);
+                stream.close();
+                System.out.println("Response from the server:");
+                System.out.println(responseBody);
+            }
+            else
+            {
+                String responseDescription = con.getResponseMessage();
+                System.out.println("Request failed, response code: " + responseCode + " (" + responseDescription + ")");
+            }
+
+        } catch (ProtocolException e)
+        {
+            System.out.println("Protocol not supported by the server");
+        } catch (MalformedURLException e)
+        {
+            e.printStackTrace();
+        } catch (IOException e)
+        {
+            System.out.println("Something went wrong: " + e.getMessage());
+            e.printStackTrace();
+        }
+
     }
 
     /**
