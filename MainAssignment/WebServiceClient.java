@@ -30,6 +30,7 @@ public class WebServiceClient
         client.solveTask4();
         client.getTask((int)Math.sqrt(4064256));
         client.solveHiddenTask();
+        client.getResults();
     }
 
     private String BASE_URL; // Base URL (address) of the server
@@ -155,9 +156,23 @@ public class WebServiceClient
                 {
                     JSONArray arguments = json.getJSONArray("arguments");
                     String ipAddress = arguments.getString(0);
-                    String subMask = arguments.getString(1);
-                    String[] ipParts = ipAddress.split(".", 4);
-                    String[] subMaskParts = subMask.split(".", 4);
+                    //String subMask = arguments.getString(1);
+                    String[] ipParts = ipAddress.split("\\.", 4);
+                    //String[] subMaskParts = subMask.split(".", 4);
+                    if (ipParts[1].equals("0"))
+                    {
+                        ipParts[1] = "123";
+                    }
+                    if (ipParts[2].equals("0"))
+                    {
+                        ipParts[2] = "123";
+                    }
+                    if (ipParts[3].equals("0"))
+                    {
+                        ipParts[3] = "123";
+                    }
+
+                    answerHiddenTask = ipParts[0] + "." + ipParts[1] + "." + ipParts[2] + "." + ipParts[3];
 
                 }
             }
@@ -230,7 +245,6 @@ public class WebServiceClient
     {
         try
         {
-            answerHiddenTask = "192.244.53.4";
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("sessionId", sessionID);
             jsonObject.put("ip", answerHiddenTask);
@@ -239,6 +253,11 @@ public class WebServiceClient
         {
             e.printStackTrace();
         }
+    }
+
+    private void getResults()
+    {
+        sendGet("dkrest/results/" + sessionID);
     }
 
     /**
